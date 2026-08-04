@@ -1,18 +1,8 @@
-FROM node:24-alpine
-ENV WORKDIR /usr/src/app/
+ARG BASE_IMAGE=node:18-slim
+FROM ${BASE_IMAGE}
+ENV USER=node
+ENV WORKDIR=/home/$USER/app
 WORKDIR $WORKDIR
-COPY package*.json $WORKDIR
-RUN npm install --production --no-cache
-
-FROM node:24-alpine
-ENV USER node
-ENV WORKDIR /home/$USER/app
-WORKDIR $WORKDIR
-COPY --from=0 /usr/src/app/node_modules node_modules
-RUN chown $USER:$USER $WORKDIR
-COPY --chown=node . $WORKDIR
-# In production environment uncomment the next line
-#RUN chown -R $USER:$USER /home/$USER && chmod -R g-s,o-rx /home/$USER && chmod -R o-wrx $WORKDIR
-# Then all further actions including running the containers should be done under non-root user.
+COPY --chown=$USER:$USER . $WORKDIR
 USER $USER
 EXPOSE 4000

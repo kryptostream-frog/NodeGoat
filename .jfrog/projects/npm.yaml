@@ -1,0 +1,8 @@
+version: 1
+type: npm
+resolver:
+    repo: kryptostream-npm-curated-dev-remote
+    serverId: solenglatest
+deployer:
+    repo: kryptostream-npm-local
+    serverId: solenglatest

@@ -50,7 +50,7 @@ on:
       environment_set:
         required: true
         type: string
-        default: "swamp_main"
+        default: "solenglatest"
         description: "Environment to use"
 
 permissions:
@@ -104,14 +104,8 @@ jobs:
           username: ${{ steps.setup-cli.outputs.oidc-user }}
           password: ${{ steps.setup-cli.outputs.oidc-token }}
 
-      # Route docker.io pulls through Artifactory so FROM node:12-alpine resolves via the remote repo
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        with:
-          buildkitd-config-inline: |
-            debug = true
-            [registry."docker.io"]
-              mirrors = ["${{ steps.get-uri.outputs.JF_URI }}/${{ github.event.inputs.rt_docker_remote_repo }}"]
 
       - name: NPM Curation Audit
         working-directory: apps/server-render
@@ -142,11 +136,13 @@ jobs:
       # jf docker build/push handle build-info collection natively; no separate add-package step needed
       - name: Docker Build
         run: |
-          jf docker build \
+          jf docker buildx build \
             --build-name "${{ github.workflow }}" \
             --build-number "${{ github.run_number }}" \
             -f apps/server-render/Dockerfile \
             -t ${{ env.JF_URI }}/${{ env.DOCKER_REPO }}/${{ env.IMAGE_NAME }}:${{ github.run_number }} \
+            --build-arg BASE_IMAGE=${{ steps.get-uri.outputs.JF_URI }}/${{ github.event.inputs.rt_docker_remote_repo }}/library/node:18-slim \
+            --load \
             apps/server-render
 
       - name: Docker Push
