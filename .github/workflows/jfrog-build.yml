@@ -1,0 +1,172 @@
+name: "jfrog-nodegoat"
+on:
+  workflow_dispatch:
+    inputs:
+      rt_npm_remote_repo_id:
+        required: true
+        type: string
+        default: "kryptostream-npm-remote"
+        description: "Artifactory NPM Repository Name"
+      rt_npm_curation_remote_repo_id:
+        required: true
+        type: string
+        default: "kryptostream-npm-curated-dev-remote"
+        description: "NPM Curation Repository Name"
+      rt_docker_repo:
+        required: true
+        type: string
+        default: "kryptostream-docker-dev-local"
+        description: "Artifactory Docker local repository"
+      rt_docker_remote_repo:
+        required: true
+        type: string
+        default: "kryptostream-docker-remote"
+        description: "Artifactory Docker remote repository (proxies Docker Hub for base image resolution)"
+      docker_image_name:
+        required: true
+        type: string
+        default: "nodegoat"
+        description: "Docker Image name"
+      xr_enable_scan:
+        required: true
+        type: string
+        default: "false"
+        description: "Scan with Xray"
+      curation_audit:
+        required: true
+        type: string
+        default: "false"
+        description: "Audit with Curation"
+      xr_override_fail_build:
+        required: true
+        type: string
+        default: "false"
+        description: "Set to false to ignore the fail build coming from Xray (exit code 3)"
+      cli_log_level:
+        required: true
+        type: string
+        default: "INFO"
+        description: "Set JFrog CLI Log level"
+      environment_set:
+        required: true
+        type: string
+        default: "swamp_main"
+        description: "Environment to use"
+
+permissions:
+  actions: read
+  id-token: write
+  packages: write
+  contents: read
+  security-events: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment_set }}
+    env:
+      DOCKER_REPO: ${{ github.event.inputs.rt_docker_repo }}
+      IMAGE_NAME: ${{ github.event.inputs.docker_image_name }}
+      JFROG_CLI_LOG_LEVEL: ${{ github.event.inputs.cli_log_level }}
+    steps:
+      - name: Print Inputs
+        run: echo "${{ toJSON(github.event.inputs) }}"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Setup JFrog CLI
+        uses: jfrog/setup-jfrog-cli@v4
+        id: setup-cli
+        env:
+          JF_URL: ${{ vars.JF_URL }}
+          JF_PROJECT: ${{ vars.JF_PROJECT }}
+        with:
+          oidc-provider-name: ptfl-github
+          oidc-audience: ptfl-aud
+
+      - name: Get URI
+        id: get-uri
+        run: |
+          URI=$(echo "${{ vars.JF_URL }}" | awk -F[/:] '{print $4}')
+          echo "JF_URI=${URI}" >> $GITHUB_ENV
+          echo "JF_URI=${URI}" >> $GITHUB_OUTPUT
+
+      - name: Docker Authenticate
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ vars.JF_URL }}
+          username: ${{ steps.setup-cli.outputs.oidc-user }}
+          password: ${{ steps.setup-cli.outputs.oidc-token }}
+
+      # Route docker.io pulls through Artifactory so FROM node:12-alpine resolves via the remote repo
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          config-inline: |
+            [registry."docker.io"]
+              mirrors = ["${{ steps.get-uri.outputs.JF_URI }}/${{ github.event.inputs.rt_docker_remote_repo }}"]
+
+      - name: NPM Curation Audit
+        working-directory: apps/server-render
+        run: |
+          if [ ${{ github.event.inputs.curation_audit }} == 'true' ]; then
+            jf npmc --repo-resolve ${{ github.event.inputs.rt_npm_curation_remote_repo_id }}
+            jf curation-audit
+            rm -rf package-lock.json
+          else
+            echo "Skip Curation Audit!!!"
+          fi
+
+      - name: NPM Audit
+        working-directory: apps/server-render
+        run: |
+          npm cache clean --force
+          rm -rf package-lock.json
+          jf npmc --repo-resolve ${{ github.event.inputs.rt_npm_remote_repo_id }}
+          jf npm i --omit=dev --loglevel verbose
+
+          if [ ${{ github.event.inputs.xr_enable_scan }} == 'true' ]; then
+            echo "Execute Xray scanning ..."
+            jf audit --npm --vuln --fail=${{ github.event.inputs.xr_override_fail_build }}
+          else
+            echo "Skip Xray scanning!!!"
+          fi
+
+      # jf docker build/push handle build-info collection natively; no separate add-package step needed
+      - name: Docker Build
+        run: |
+          jf docker build \
+            --build-name "${{ github.workflow }}" \
+            --build-number "${{ github.run_number }}" \
+            -f apps/server-render/Dockerfile \
+            -t ${{ env.JF_URI }}/${{ env.DOCKER_REPO }}/${{ env.IMAGE_NAME }}:${{ github.run_number }} \
+            apps/server-render
+
+      - name: Docker Push
+        run: |
+          jf docker push \
+            ${{ env.JF_URI }}/${{ env.DOCKER_REPO }}/${{ env.IMAGE_NAME }}:${{ github.run_number }} \
+            --build-name "${{ github.workflow }}" \
+            --build-number "${{ github.run_number }}"
+
+      - name: Docker Scan
+        run: |
+          if [ ${{ github.event.inputs.xr_enable_scan }} == 'true' ]; then
+            jf docker pull ${{ vars.JF_URL }}/${{ env.DOCKER_REPO }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}
+            jf docker scan ${{ vars.JF_URL }}/${{ env.DOCKER_REPO }}/${{ env.IMAGE_NAME }}:${{ github.run_number }} \
+              --fail=${{ github.event.inputs.xr_override_fail_build }} --vuln
+          else
+            echo "Skip Xray scanning!!!"
+          fi
+
+      - name: Publish Build Info
+        run: |
+          jf rt build-collect-env
+          jf rt build-add-git
+          jf rt build-publish "${{ github.workflow }}" "${{ github.run_number }}"
