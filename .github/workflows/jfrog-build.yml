@@ -50,7 +50,7 @@ on:
       environment_set:
         required: true
         type: string
-        default: "swamp_main"
+        default: "solenglatest"
         description: "Environment to use"
 
 permissions:
@@ -141,11 +141,12 @@ jobs:
       # jf docker build/push handle build-info collection natively; no separate add-package step needed
       - name: Docker Build
         run: |
-          jf docker build \
+          jf docker buildx build \
             --build-name "${{ github.workflow }}" \
             --build-number "${{ github.run_number }}" \
             -f apps/server-render/Dockerfile \
             -t ${{ env.JF_URI }}/${{ env.DOCKER_REPO }}/${{ env.IMAGE_NAME }}:${{ github.run_number }} \
+            --load \
             apps/server-render
 
       - name: Docker Push
