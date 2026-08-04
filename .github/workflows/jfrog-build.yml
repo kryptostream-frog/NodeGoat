@@ -50,7 +50,7 @@ on:
       environment_set:
         required: true
         type: string
-        default: "solenglatest"
+        default: "swamp_main"
         description: "Environment to use"
 
 permissions:
@@ -108,7 +108,8 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
-          config-inline: |
+          buildkitd-config-inline: |
+            debug = true
             [registry."docker.io"]
               mirrors = ["${{ steps.get-uri.outputs.JF_URI }}/${{ github.event.inputs.rt_docker_remote_repo }}"]
 
@@ -141,12 +142,11 @@ jobs:
       # jf docker build/push handle build-info collection natively; no separate add-package step needed
       - name: Docker Build
         run: |
-          jf docker buildx build \
+          jf docker build \
             --build-name "${{ github.workflow }}" \
             --build-number "${{ github.run_number }}" \
             -f apps/server-render/Dockerfile \
             -t ${{ env.JF_URI }}/${{ env.DOCKER_REPO }}/${{ env.IMAGE_NAME }}:${{ github.run_number }} \
-            --load \
             apps/server-render
 
       - name: Docker Push
