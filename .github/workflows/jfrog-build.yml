@@ -141,7 +141,7 @@ jobs:
       # jf docker build/push handle build-info collection natively; no separate add-package step needed
       - name: Docker Build
         run: |
-          jf docker build \
+          jf docker buildx build \
             --build-name "${{ github.workflow }}" \
             --build-number "${{ github.run_number }}" \
             -f apps/server-render/Dockerfile \
