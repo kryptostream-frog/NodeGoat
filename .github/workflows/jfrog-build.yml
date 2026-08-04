@@ -146,6 +146,7 @@ jobs:
             --build-number "${{ github.run_number }}" \
             -f apps/server-render/Dockerfile \
             -t ${{ env.JF_URI }}/${{ env.DOCKER_REPO }}/${{ env.IMAGE_NAME }}:${{ github.run_number }} \
+            --load \
             apps/server-render
 
       - name: Docker Push
