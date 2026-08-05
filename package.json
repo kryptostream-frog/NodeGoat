@@ -18,7 +18,10 @@
     "all:deps-remove": "lerna exec -- rm -rf ./node_modules",
     "all:infra-start": "lerna run --parallel start-infra",
     "all:infra-stop": "lerna run --parallel stop-infra",
+    "infra:start": "docker-compose up --build",
+    "infra:stop": "docker-compose down",
     "server-render:docker-mongo": "lerna run --scope *-server-render docker-mongo",
+    "server-render:build": "lerna run --scope *-server-render build",
     "server-render:start": "lerna run --scope *-server-render start",
     "server-render:dev": "lerna run --scope *-server-render dev"
   },

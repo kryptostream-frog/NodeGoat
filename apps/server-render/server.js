@@ -31,7 +31,13 @@ const httpsOptions = {
 };
 */
 
-MongoClient.connect(db, (err, db) => {
+const nextJs = require("next");
+const dev = process.env.NODE_ENV !== "production";
+const nextApp = nextJs({ dev });
+const handle = nextApp.getRequestHandler();
+
+nextApp.prepare().then(() => {
+    MongoClient.connect(db, (err, db) => {
     if (err) {
         console.log("Error: DB: connect");
         console.log(err);
@@ -143,6 +149,9 @@ MongoClient.connect(db, (err, db) => {
         */
     });
 
+    // Next.js handles any URL not matched by Express routes above
+    app.all("*", (req, res) => handle(req, res));
+
     // Insecure HTTP connection
     http.createServer(app).listen(port, () => {
         console.log(`Express http server listening on port ${port}`);
@@ -156,4 +165,8 @@ MongoClient.connect(db, (err, db) => {
     });
     */
 
+    }); // end MongoClient.connect
+}).catch((err) => {
+    console.error("Next.js initialization error:", err);
+    process.exit(1);
 });

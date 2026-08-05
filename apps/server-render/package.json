@@ -5,6 +5,9 @@
   "description": "A tool to learn OWASP Top 10 for node.js developers",
   "main": "server.js",
   "dependencies": {
+    "next": "15.5.16",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.15.1",
     "consolidate": "^0.14.1",
@@ -26,6 +29,7 @@
     "//": "do not upgrade the 'marked' package, version 0.3.5 is required for the a9 insecure components vulnerability"
   },
   "scripts": {
+    "build": "next build",
     "start": "node server.js",
     "dev": "PORT=5000 nodemon",
     "test:e2e": "NODE_ENV=test cypress open",
@@ -42,6 +46,10 @@
     "githook:post-merge": "npm install && npm install --package-lock-only"
   },
   "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.0.0",
     "async": "^2.0.0-rc.4",
     "cypress": "^3.3.1",
     "grunt": "^1.0.1",
