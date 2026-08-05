@@ -52,6 +52,13 @@ on:
         type: string
         default: "solenglatest"
         description: "Environment to use"
+  push:
+    branches:
+      - "feature/**"
+      - master
+  pull_request:
+    branches:
+      - feature/187
 
 permissions:
   actions: read
@@ -63,11 +70,11 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment_set }}
+    environment: ${{ inputs.environment_set || 'solenglatest' }}
     env:
-      DOCKER_REPO: ${{ github.event.inputs.rt_docker_repo }}
-      IMAGE_NAME: ${{ github.event.inputs.docker_image_name }}
-      JFROG_CLI_LOG_LEVEL: ${{ github.event.inputs.cli_log_level }}
+      DOCKER_REPO: ${{ inputs.rt_docker_repo || 'kryptostream-docker-dev-local' }}
+      IMAGE_NAME: ${{ inputs.docker_image_name || 'nodegoat' }}
+      JFROG_CLI_LOG_LEVEL: ${{ inputs.cli_log_level || 'INFO' }}
     steps:
       - name: Print Inputs
         run: echo "${{ toJSON(github.event.inputs) }}"
@@ -110,8 +117,8 @@ jobs:
       - name: NPM Curation Audit
         working-directory: apps/server-render
         run: |
-          if [ ${{ github.event.inputs.curation_audit }} == 'true' ]; then
-            jf npmc --repo-resolve ${{ github.event.inputs.rt_npm_curation_remote_repo_id }}
+          if [ ${{ inputs.curation_audit || 'false' }} == 'true' ]; then
+            jf npmc --repo-resolve ${{ inputs.rt_npm_curation_remote_repo_id || 'kryptostream-npm-curated-dev-remote' }}
             jf curation-audit
             rm -rf package-lock.json
           else
@@ -123,12 +130,12 @@ jobs:
         run: |
           npm cache clean --force
           rm -rf package-lock.json
-          jf npmc --repo-resolve ${{ github.event.inputs.rt_npm_remote_repo_id }}
+          jf npmc --repo-resolve ${{ inputs.rt_npm_remote_repo_id || 'kryptostream-npm-remote' }}
           jf npm i --omit=dev --loglevel verbose
 
-          if [ ${{ github.event.inputs.xr_enable_scan }} == 'true' ]; then
+          if [ ${{ inputs.xr_enable_scan || 'false' }} == 'true' ]; then
             echo "Execute Xray scanning ..."
-            jf audit --npm --vuln --fail=${{ github.event.inputs.xr_override_fail_build }}
+            jf audit --npm --vuln --fail=${{ inputs.xr_override_fail_build || 'false' }}
           else
             echo "Skip Xray scanning!!!"
           fi
@@ -141,7 +148,7 @@ jobs:
             --build-number "${{ github.run_number }}" \
             -f apps/server-render/Dockerfile \
             -t ${{ env.JF_URI }}/${{ env.DOCKER_REPO }}/${{ env.IMAGE_NAME }}:${{ github.run_number }} \
-            --build-arg BASE_IMAGE=${{ steps.get-uri.outputs.JF_URI }}/${{ github.event.inputs.rt_docker_remote_repo }}/library/node:18-slim \
+            --build-arg BASE_IMAGE=${{ steps.get-uri.outputs.JF_URI }}/${{ inputs.rt_docker_remote_repo || 'kryptostream-docker-remote' }}/library/node:18-slim \
             --load \
             apps/server-render
 
@@ -154,10 +161,10 @@ jobs:
 
       - name: Docker Scan
         run: |
-          if [ ${{ github.event.inputs.xr_enable_scan }} == 'true' ]; then
+          if [ ${{ inputs.xr_enable_scan || 'false' }} == 'true' ]; then
             jf docker pull ${{ vars.JF_URL }}/${{ env.DOCKER_REPO }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}
             jf docker scan ${{ vars.JF_URL }}/${{ env.DOCKER_REPO }}/${{ env.IMAGE_NAME }}:${{ github.run_number }} \
-              --fail=${{ github.event.inputs.xr_override_fail_build }} --vuln
+              --fail=${{ inputs.xr_override_fail_build || 'false' }} --vuln
           else
             echo "Skip Xray scanning!!!"
           fi

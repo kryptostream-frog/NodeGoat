@@ -13,7 +13,11 @@ function StatsHandler(db) {
                 db.collection("memos").count({}, (err, n) => err ? reject(err) : resolve(n));
             }),
         ]).then(([userCount, contributionCount, memoCount]) => {
-            return res.json({ userCount, contributionCount, memoCount });
+            return res.json({
+                userCount,
+                contributionCount,
+                memoCount
+            });
         }).catch(next);
     };
 }
