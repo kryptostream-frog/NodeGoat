@@ -58,7 +58,7 @@ on:
       - master
   pull_request:
     branches:
-      - feature/187
+      - feature/**
 
 permissions:
   actions: read
@@ -85,7 +85,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
 
       - name: Setup JFrog CLI
         uses: jfrog/setup-jfrog-cli@v4

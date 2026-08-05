@@ -3,7 +3,8 @@ name: "Frogbot Scan Repository"
 on:
   push:
     branches:
-      - feature/187
+      - feature/**
+      - master
   schedule:
     - cron: "0 0 * * *"
   workflow_dispatch:
@@ -18,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        branch: ["feature/187"]
+        branch: ["feature/**" ,"master"]
     steps:
       - uses: jfrog/frogbot@v2
         env:

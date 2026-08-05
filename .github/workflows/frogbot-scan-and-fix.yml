@@ -12,7 +12,7 @@
 name: "Frogbot Scan and Fix"
 on:
   push:
-    branches: [ "feature/187" ]
+    branches: [ "feature/**" ]
 permissions:
   contents: write
   pull-requests: write
