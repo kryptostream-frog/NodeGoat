@@ -3,6 +3,7 @@ FROM ${BASE_IMAGE} AS builder
 WORKDIR /app
 COPY . .
 RUN npm run build
+RUN npm prune --omit=dev
 
 FROM ${BASE_IMAGE}
 ENV NODE_ENV=production
