@@ -131,7 +131,7 @@ jobs:
           npm cache clean --force
           rm -rf package-lock.json
           jf npmc --repo-resolve ${{ inputs.rt_npm_remote_repo_id || 'kryptostream-npm-remote' }}
-          jf npm i --omit=dev --loglevel verbose
+          jf npm i --loglevel verbose
 
           if [ ${{ inputs.xr_enable_scan || 'false' }} == 'true' ]; then
             echo "Execute Xray scanning ..."
