@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: frogbot
     steps:
-      - uses: jfrog/frogbot@v2
+      - uses: jfrog/frogbot@v3
         env:
           JF_URL: ${{ secrets.JF_URL }}
           JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
