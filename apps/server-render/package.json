@@ -5,9 +5,6 @@
   "description": "A tool to learn OWASP Top 10 for node.js developers",
   "main": "server.js",
   "dependencies": {
-    "next": "15.5.16",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.15.1",
     "consolidate": "^0.14.1",
@@ -20,10 +17,13 @@
     "marked": "0.3.5",
     "mongodb": "^2.1.18",
     "needle": "2.2.4",
+    "next": "15.5.16",
     "node-esapi": "0.0.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "serve-favicon": "^2.3.0",
     "swig": "^1.4.2",
-    "underscore": "^1.8.3"
+    "underscore": "^1.13.8"
   },
   "comments": {
     "//": "do not upgrade the 'marked' package, version 0.3.5 is required for the a9 insecure components vulnerability"
@@ -49,7 +49,6 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "typescript": "^5.0.0",
     "async": "^2.0.0-rc.4",
     "cypress": "^3.3.1",
     "grunt": "^1.0.1",
@@ -67,6 +66,7 @@
     "nodemon": "^1.19.1",
     "selenium-webdriver": "^2.53.2",
     "should": "^8.3.1",
+    "typescript": "^5.0.0",
     "zaproxy": "^0.2.0"
   },
   "repository": "https://github.com/OWASP/NodejsGoat",
