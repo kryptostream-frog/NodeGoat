@@ -11,6 +11,7 @@ const VULNERABILITIES = [
   { id: "a8", label: "A8 – Cross-Site Request Forgery (CSRF)",   route: "/tutorial/a8" },
   { id: "a9", label: "A9 – Using Components with Known Vulnerabilities", route: "/tutorial/a9" },
   { id: "a10", label: "A10 – Server-Side Request Forgery (SSRF)", route: "/research" },
+  { id: "transitive", label: "Bonus – Transitive CVE Reachability (axios / follow-redirects)", route: "/webhook" },
 ] as const;
 
 export default function SecurityDashboardPage() {

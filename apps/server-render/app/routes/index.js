@@ -6,6 +6,7 @@ const AllocationsHandler = require("./allocations");
 const MemosHandler = require("./memos");
 const ResearchHandler = require("./research");
 const StatsHandler = require("./stats");
+const WebhookHandler = require("./webhook");
 
 const ErrorHandler = require("./error").errorHandler;
 
@@ -21,6 +22,7 @@ const index = (app, db) => {
     const memosHandler = new MemosHandler(db);
     const researchHandler = new ResearchHandler(db);
     const statsHandler = new StatsHandler(db);
+    const webhookHandler = new WebhookHandler(db);
 
     // Middleware to check if a user is logged in
     const isLoggedIn = sessionHandler.isLoggedInMiddleware;
@@ -91,6 +93,10 @@ const index = (app, db) => {
 
     // App stats API – used by the Next.js /stats page
     app.get("/api/stats", statsHandler.getStats);
+
+    // Webhook preview – training module for transitive CVE reachability
+    app.get("/api/webhook/preview", webhookHandler.previewWebhook);
+    app.get("/api/webhook/graph", webhookHandler.dependencyGraph);
 
     // Error handling middleware
     app.use(ErrorHandler);

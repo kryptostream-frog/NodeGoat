@@ -1,42 +1,22 @@
 {
-  "name": "owasp-nodegoat-server-render",
-  "private": true,
-  "version": "1.3.0",
-  "description": "A tool to learn OWASP Top 10 for node.js developers",
+  "name": "froghome",
+  "version": "1.0.0",
+  "description": "",
   "main": "server.js",
-  "dependencies": {
-    "next": "15.5.16",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "bcrypt-nodejs": "0.0.3",
-    "body-parser": "^1.15.1",
-    "consolidate": "^0.14.1",
-    "csurf": "^1.8.3",
-    "dont-sniff-mimetype": "^1.0.0",
-    "express": "^4.13.4",
-    "express-session": "^1.13.0",
-    "forever": "^3.0.0",
-    "helmet": "^2.0.0",
-    "marked": "0.3.5",
-    "mongodb": "^2.1.18",
-    "needle": "2.2.4",
-    "node-esapi": "0.0.1",
-    "serve-favicon": "^2.3.0"
-  },
-  "comments": {
-    "//": "do not upgrade the 'marked' package, version 0.3.5 is required for the a9 insecure components vulnerability"
-  },
   "scripts": {
-    "build": "next build",
-    "start": "node server.js",
-    "dev": "PORT=5000 nodemon",
-    "test:e2e": "NODE_ENV=test cypress open",
-    "test:ci": "NODE_ENV=test cypress run",
-    "test": "node node_modules/grunt-cli/bin/grunt test",
-    "db:seed": "NODE_ENV=test grunt db-reset",
-    "start-infra": "docker-compose up"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": "https://github.com/OWASP/NodejsGoat",
-  "license": "Apache 2.0"
+  "author": "davidro@jfrog.com",
+  "license": "MIT",
+  "dependencies": {
+    "editor.md": "1.5.0",
+    "ejs": "3.1.6",
+    "express": "4.18.2",
+    "lodash": "4.17.0",
+    "moment": "2.29.0",
+    "pm2": "5.3.0",
+    "protobufjs": "^6.11.4",
+    "@opencode-ai/sdk": "^1.18.11",
+    "vm2": "3.9.4"
+  }
 }
-

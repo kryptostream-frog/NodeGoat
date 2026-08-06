@@ -185,10 +185,12 @@ function SessionHandler(db) {
             verify
         } = req.body;
 
-        // set these up in case we have an error case
+        // Sanitize before passing to template to prevent Template Object Injection
+        const sanitize = (val) => String(val).replace(/[&<>"'/]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#x27;", "/": "&#x2F;" }[c]));
+
         const errors = {
-            "userName": userName,
-            "email": email
+            "userName": sanitize(userName),
+            "email": sanitize(email)
         };
 
         if (validateSignup(userName, firstName, lastName, password, verify, email, errors)) {
